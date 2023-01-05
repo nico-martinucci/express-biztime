@@ -27,6 +27,7 @@ router.get("/:code", async function (req, res) {
             WHERE code = $1`,
     [code]
   );
+  // or use "if rows[0] is falsy"
   if (!result.rows.length) throw new NotFoundError(`No matching code: ${code}`);
 
   return res.json({ company: result.rows[0] });
@@ -38,6 +39,10 @@ router.get("/:code", async function (req, res) {
  Returns obj of new company: {company: {code, name, description}}*/
 router.post("/", async function (req, res) {
   const { code, name, description } = req.body;
+  // for error handling, do a select first to see if company already exists;
+  // check if pg error message includes "duplicate key" or another error message
+  // and handle accordingly
+  // or wrap the db.query in a try/catch (but a bit blunt of an approach)
   const result = await db.query(
     `INSERT INTO companies
             VALUES ($1, $2, $3)
